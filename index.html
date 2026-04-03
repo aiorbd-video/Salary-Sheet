@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary Sheet App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- OneSignal Push Notification Script (Works on Web/Browsers, not on basic WebView apps) -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.init({
+          appId: "ee7c1da9-c5eb-446b-8c05-40dee5ddf876",
+          notifyButton: {
+            enable: true, 
+          },
+        });
+      });
+    </script>
+    <!-- End OneSignal -->
+
+    <style>
+        :root {
+            --bg-dark: #2b3c53;
+            --card-bg: #ffffff;
+            --primary: #2b8a81;
+            --primary-hover: #22736b;
+            --accent-blue: #1e6ec7;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --border-color: #e2e8f0;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            margin: 0;
+            padding: 20px 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-gray);
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+        }
+
+        /* Inputs & Grids */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        label {
+            font-size: 11px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover { background: var(--primary-hover); }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--text-gray);
+            border: 1px solid var(--text-gray);
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-danger-outline {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .btn-danger-outline:hover {
+            background: #fef2f2;
+        }
+
+        /* Table Area */
+        .table-container {
+            max-height: 400px; 
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th {
+            text-align: center;
+            padding: 10px 5px;
+            color: var(--text-dark);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 10px;
+            border-bottom: 2px solid var(--border-color);
+            background: #f8fafc;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 8px 5px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-dark);
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .ot-input {
+            width: 60px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 4px;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px; width: 16px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(18px); }
+
+        /* Summary Section */
+        .summary-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+        }
+
+        .summary-box .title {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-gray);
+            text-transform: uppercase;
+        }
+
+        .summary-box .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        .total-salary-box {
+            background: var(--accent-blue);
+            color: white;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .total-salary-box .title { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .total-salary-box .value { font-size: 22px; font-weight: 700; margin-top: 2px; }
+
+        /* Yearly Subtotal Box */
+        .yearly-subtotal-box {
+            background: #0f172a;
+            color: white;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .yearly-subtotal-box .title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        .yearly-subtotal-box .value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #38bdf8;
+            margin-top: 5px;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer-text {
+            color: var(--text-dark);
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .social-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 8px 15px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 20px;
+            transition: 0.2s;
+            background: #f8fafc;
+        }
+
+        .social-links a:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .ad-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            margin-top: 10px;
+            border-radius: 8px;
+            background-color: #f1f5f9;
+            min-height: 250px; 
+        }
+
+        /* Auto Save Indicator Header */
+        .auto-save-text {
+            position: absolute;
+            right: 0;
+            top: -20px;
+            font-size: 10px;
+            color: #10b981;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <!-- Header -->
+    <div class="card app-header">
+        <div id="saveIndicator" class="auto-save-text">✓ Auto-saved</div>
+        📅 SALARY SHEET
+    </div>
+
+    <!-- Month & Year -->
+    <div class="card">
+        <div class="grid-3" style="grid-template-columns: 2fr 1fr 1fr; align-items: end;">
+            <div class="input-wrapper">
+                <label>MONTH</label>
+                <select id="monthSelect" onchange="generateTable()">
+                    <option value="0">January</option>
+                    <option value="1">February</option>
+                    <option value="2">March</option>
+                    <option value="3" selected>April</option>
+                    <option value="4">May</option>
+                    <option value="5">June</option>
+                    <option value="6">July</option>
+                    <option value="7">August</option>
+                    <option value="8">September</option>
+                    <option value="9">October</option>
+                    <option value="10">November</option>
+                    <option value="11">December</option>
+                </select>
+            </div>
+            <div class="input-wrapper">
+                <label>YEAR</label>
+                <input type="number" id="yearInput" value="2026" onchange="generateTable()">
+            </div>
+            <button class="btn" onclick="generateTable()">Load</button>
+        </div>
+    </div>
+
+    <!-- Salary Details -->
+    <div class="card">
+        <h3 class="section-title">SALARY DETAILS</h3>
+        <div class="grid-3">
+            <div class="input-wrapper">
+                <label>Basic Salary</label>
+                <input type="number" id="basicSalary" value="13500" oninput="calculateSalary()">
+            </div>
+            <div class="input-wrapper">
+                <label>OT Rate</label>
+                <input type="number" id="otRate" value="38" oninput="calculateSalary()">
+            </div>
+            <div class="input-wrapper">
+                <label>Night Rate</label>
+                <input type="number" id="nightRate" value="300" oninput="calculateSalary()">
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Attendance -->
+    <div class="card">
+        <h3 class="section-title">DAILY ATTENDANCE</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Date</th>
+                        <th style="text-align: left;">Day</th>
+                        <th>OT HRS</th>
+                        <th>Night</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTableBody">
+                    <!-- JavaScript will generate rows here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="card">
+        <h3 class="section-title">SUMMARY</h3>
+        <div class="grid-2">
+            <div class="summary-box">
+                <div class="title">Total OT Hours</div>
+                <div class="value" id="totalOTHours">0</div>
+            </div>
+            <div class="summary-box">
+                <div class="title">Total Night Shifts</div>
+                <div class="value" id="totalNights">0</div>
+            </div>
+        </div>
+        <div class="grid-3" style="margin-top: 10px; grid-template-columns: 1fr 1fr 1.5fr;">
+            <div class="summary-box">
+                <div class="title">OT Amount</div>
+                <div class="value" id="otAmount" style="font-size: 16px;">0</div>
+            </div>
+            <div class="summary-box">
+                <div class="title">Night Amount</div>
+                <div class="value" id="nightAmount" style="font-size: 16px;">0</div>
+            </div>
+            <div class="total-salary-box">
+                <div class="title">Total Salary</div>
+                <div class="value" id="totalSalary">0</div>
+            </div>
+        </div>
+
+        <!-- Yearly Subtotal -->
+        <div class="yearly-subtotal-box">
+            <div class="title">Total Salary of <span id="displayYearText">2026</span></div>
+            <div class="value">৳ <span id="yearlySubtotal">0</span></div>
+        </div>
+
+        <!-- Buttons at the Bottom -->
+        <div class="grid-2" style="margin-top: 15px;">
+            <button class="btn btn-danger-outline" onclick="clearMonthData()">Clear Month</button>
+            <button class="btn" onclick="manualSaveData()">Save Month</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="footer-text">Powered By Ratul Hasan</div>
+        
+        <!-- Text Based Social Links -->
+        <div class="social-links">
+            <a href="https://www.facebook.com/share/1LmGnRJ2Wv/" target="_blank">Facebook</a>
+            <a href="https://t.me/itsmeratul" target="_blank">Telegram</a>
+            <a href="https://wa.me/8801910254667" target="_blank">WhatsApp</a>
+        </div>
+
+        <!-- New Banner Ad in Footer -->
+        <div class="ad-container">
+            <script>
+              atOptions = {
+                'key' : 'e8d156b2876798842923e2f7475b7419',
+                'format' : 'iframe',
+                'height' : 250,
+                'width' : 300,
+                'params' : {}
+              };
+            </script>
+            <script src="https://momrollback.com/e8d156b2876798842923e2f7475b7419/invoke.js"></script>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let isAppLoading = true;
+
+    // 1. Generate the Table Rows
+    function generateTable() {
+        isAppLoading = true; 
+        const monthSelect = document.getElementById('monthSelect');
+        const yearInput = document.getElementById('yearInput');
+        
+        const monthIndex = parseInt(monthSelect.value); // 0-11
+        const year = parseInt(yearInput.value);
+        const monthName = monthSelect.options[monthSelect.selectedIndex].text;
+
+        document.getElementById('displayYearText').innerText = year;
+
+        // Get total days in selected month and year
+        const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+        
+        const tbody = document.getElementById('attendanceTableBody');
+        tbody.innerHTML = ''; // Clear existing rows
+
+        let htmlString = '';
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dateObj = new Date(year, monthIndex, i);
+            const dateStr = `${String(i).padStart(2, '0')}-${monthName.substring(0,3)}-${year}`;
+            const dayStr = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+
+            htmlString += `
+            <tr>
+                <td style="text-align: left; font-size: 11px; font-weight: 600;">${dateStr}</td>
+                <td style="text-align: left; font-size: 11px;">${dayStr}</td>
+                <td>
+                    <input type="number" class="ot-input" min="0" oninput="calculateSalary()" placeholder="0">
+                </td>
+                <td>
+                    <label class="switch">
+                        <input type="checkbox" class="night-check" onchange="calculateSalary()">
+                        <span class="slider"></span>
+                    </label>
+                </td>
+            </tr>`;
+        }
+        
+        tbody.innerHTML = htmlString;
+        
+        // After generating, load any saved data for this specific month/year
+        loadDataFromStorage(monthName, year);
+    }
+
+    // 2. Calculate Totals
+    function calculateSalary() {
+        const basic = parseFloat(document.getElementById('basicSalary').value) || 0;
+        const otRate = parseFloat(document.getElementById('otRate').value) || 0;
+        const nightRate = parseFloat(document.getElementById('nightRate').value) || 0;
+
+        let totalOTHours = 0;
+        let totalNightShifts = 0;
+
+        const otInputs = document.querySelectorAll('.ot-input');
+        const nightChecks = document.querySelectorAll('.night-check');
+
+        otInputs.forEach(input => {
+            totalOTHours += parseFloat(input.value) || 0;
+        });
+
+        nightChecks.forEach(check => {
+            if (check.checked) totalNightShifts++;
+        });
+
+        const otTotalAmount = totalOTHours * otRate;
+        const nightTotalAmount = totalNightShifts * nightRate;
+        const totalSalary = basic + otTotalAmount + nightTotalAmount;
+
+        // Update UI
+        document.getElementById('totalOTHours').innerText = totalOTHours;
+        document.getElementById('totalNights').innerText = totalNightShifts;
+        document.getElementById('otAmount').innerText = otTotalAmount.toLocaleString();
+        document.getElementById('nightAmount').innerText = nightTotalAmount.toLocaleString();
+        document.getElementById('totalSalary').innerText = totalSalary.toLocaleString();
+
+        updateYearlySubtotal(totalSalary);
+
+        // Auto Save Trigger (Only if user is actively modifying inputs, not during initial load/month change)
+        if (!isAppLoading) {
+            triggerAutoSave();
+        }
+    }
+
+    // 3. Yearly Subtotal Logic
+    function updateYearlySubtotal(currentMonthTotal) {
+        const year = document.getElementById('yearInput').value;
+        const monthSelect = document.getElementById('monthSelect');
+        const currentMonthName = monthSelect.options[monthSelect.selectedIndex].text;
+        
+        const allMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        let yearlyTotal = 0;
+
+        allMonths.forEach(mName => {
+            if (mName === currentMonthName) {
+                // Add the live value on screen
+                yearlyTotal += currentMonthTotal;
+            } else {
+                // Add saved values from storage
+                const savedDataStr = localStorage.getItem(`salary_data_${mName}_${year}`);
+                if (savedDataStr) {
+                    try {
+                        const data = JSON.parse(savedDataStr);
+                        const b = parseFloat(data.basic) || 0;
+                        const or = parseFloat(data.otRate) || 0;
+                        const nr = parseFloat(data.nightRate) || 0;
+
+                        const otValues = Array.isArray(data.otValues) ? data.otValues : [];
+                        const nightValues
